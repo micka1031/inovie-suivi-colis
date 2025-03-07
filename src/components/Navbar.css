@@ -1,0 +1,132 @@
+.navbar {
+  display: flex;
+  flex-direction: column;
+  background-color: #003366;
+  color: white;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.navbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  height: 32px;
+}
+
+.navbar-title {
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-size: 12px;
+}
+
+.user-avatar {
+  background-color: white;
+  color: #003366;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.navbar-tabs {
+  display: flex;
+  padding: 0 16px;
+  gap: 2px;
+}
+
+.navbar-tab {
+  background-color: #002244;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  font-size: 12px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-tab:hover {
+  background-color: #001a33;
+}
+
+.navbar-tab.active {
+  background-color: white;
+  color: #000;
+}
+
+.navbar-tab i {
+  font-size: 14px;
+}
+
+.navbar-actions {
+  display: none; /* Caché par défaut, visible uniquement sur mobile */
+}
+
+.logout-button {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 2px;
+}
+
+.logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ajout pour le contenu */
+.content {
+  margin-top: 80px; /* Espace pour la navbar */
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .navbar-tab {
+    flex: 1;
+    min-width: 100px;
+    justify-content: center;
+  }
+  
+  .navbar-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 16px;
+  }
+  
+  .content {
+    margin-top: 120px; /* Plus d'espace pour la navbar sur mobile */
+  }
+} 

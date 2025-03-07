@@ -1,0 +1,72 @@
+.tournees-container {
+  padding: 2rem;
+}
+
+.tournees-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.tournees-header h1 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 2rem;
+}
+
+.new-tournee-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.new-tournee-button:hover {
+  background-color: #1d4ed8;
+}
+
+.tournees-actions {
+  margin-bottom: 2rem;
+}
+
+.action-button {
+  display: inline-block;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.action-button:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.tournees-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tournees-content p {
+  margin: 0 0 1rem 0;
+  color: #4b5563;
+}
+
+.tournees-content ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #4b5563;
+}
+
+.tournees-content li {
+  margin-bottom: 0.5rem;
+} 
