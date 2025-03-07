@@ -12,10 +12,9 @@ const TourneesTable: React.FC<TourneesTableProps> = ({ tournees }) => {
   const filteredTournees = tournees.filter(tournee => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      (tournee.nom?.toLowerCase() || '').includes(searchLower) ||
-      (tournee.description?.toLowerCase() || '').includes(searchLower) ||
-      (tournee.vehicule?.toLowerCase() || '').includes(searchLower) ||
-      (tournee.chauffeur?.toLowerCase() || '').includes(searchLower)
+      tournee.nom.toLowerCase().includes(searchLower) ||
+      tournee.codeBarres.toLowerCase().includes(searchLower) ||
+      (tournee.personne?.toLowerCase() || '').includes(searchLower)
     );
   });
 
@@ -37,26 +36,32 @@ const TourneesTable: React.FC<TourneesTableProps> = ({ tournees }) => {
         <thead>
           <tr>
             <th>Nom</th>
-            <th>Description</th>
+            <th>Code-barres</th>
+            <th>Pôle</th>
             <th>Véhicule</th>
-            <th>Chauffeur</th>
-            <th>Date de création</th>
+            <th>Personne</th>
+            <th>Date début</th>
+            <th>Date fin</th>
             <th>Statut</th>
+            <th>Commentaire</th>
           </tr>
         </thead>
         <tbody>
           {filteredTournees.map((tournee) => (
             <tr key={tournee.id}>
-              <td>{tournee.nom || '-'}</td>
-              <td>{tournee.description || '-'}</td>
-              <td>{tournee.vehicule || '-'}</td>
-              <td>{tournee.chauffeur || '-'}</td>
-              <td>{tournee.dateCreation ? new Date(tournee.dateCreation.toDate()).toLocaleDateString() : '-'}</td>
+              <td>{tournee.nom}</td>
+              <td>{tournee.codeBarres}</td>
+              <td>{tournee.pole}</td>
+              <td>{tournee.vehiculeId || '-'}</td>
+              <td>{tournee.personne || '-'}</td>
+              <td>{tournee.dateDebut}</td>
+              <td>{tournee.dateFin || '-'}</td>
               <td>
-                <span className={`status-badge ${tournee.statut?.toLowerCase() || 'inconnu'}`}>
-                  {tournee.statut || 'Inconnu'}
+                <span className={`status-badge ${tournee.statut.toLowerCase()}`}>
+                  {tournee.statut}
                 </span>
               </td>
+              <td>{tournee.commentaire || '-'}</td>
             </tr>
           ))}
         </tbody>

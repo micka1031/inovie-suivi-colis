@@ -13,7 +13,7 @@ const SitesTable: React.FC<SitesTableProps> = ({ sites }) => {
   // Filtrer les sites
   const filteredSites = sites.filter(site => {
     const matchesSearch = site.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         site.codeBarre.toLowerCase().includes(searchTerm.toLowerCase());
+                         site.codeBarres.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPole = poleFilter ? site.pole === poleFilter : true;
     
     return matchesSearch && matchesPole;
@@ -30,7 +30,7 @@ const SitesTable: React.FC<SitesTableProps> = ({ sites }) => {
         <div className="filter-group">
           <input
             type="text"
-            placeholder="Rechercher par nom ou code barre..."
+            placeholder="Rechercher par nom ou code-barres..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="filter-input"
@@ -56,22 +56,24 @@ const SitesTable: React.FC<SitesTableProps> = ({ sites }) => {
           <thead>
             <tr>
               <th>Nom</th>
-              <th>Code Barre</th>
+              <th>Code-barres</th>
               <th>Pôle</th>
               <th>Ville</th>
               <th>Adresse</th>
               <th>Téléphone</th>
+              <th>Email</th>
             </tr>
           </thead>
           <tbody>
             {filteredSites.map(site => (
               <tr key={site.id}>
                 <td>{site.nom}</td>
-                <td>{site.codeBarre}</td>
+                <td>{site.codeBarres}</td>
                 <td>{site.pole}</td>
                 <td>{site.ville}</td>
                 <td>{site.adresse}</td>
-                <td>{site.tel}</td>
+                <td>{site.telephone || '-'}</td>
+                <td>{site.email || '-'}</td>
               </tr>
             ))}
           </tbody>
