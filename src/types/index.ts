@@ -50,10 +50,7 @@ export interface Tournee {
 
 export interface Vehicule {
   id: string;
-  nom: string;
-  type: string;
+  immatriculation: string;
   marque: string;
   modele: string;
-  immatriculation: string;
-  statut: 'Disponible' | 'En service' | 'En maintenance';
 }
