@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createAdminUser } from '../firebaseAuth';
+import { createUser } from '../firebaseAuth';
 import { User } from '../types';
 import './LoginScreen.css';
 
@@ -11,6 +11,7 @@ const AdminRegistration: React.FC<AdminRegistrationProps> = ({ onRegistration })
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
   const [pole, setPole] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,7 @@ const AdminRegistration: React.FC<AdminRegistrationProps> = ({ onRegistration })
     setIsLoading(true);
 
     try {
-      const user = await createAdminUser(email, password, nom, pole);
+      const user = await createUser(email, password, nom, prenom, 'Administrateur', pole);
       onRegistration(user);
     } catch (error: any) {
       setError(error.message);
@@ -57,12 +58,22 @@ const AdminRegistration: React.FC<AdminRegistrationProps> = ({ onRegistration })
             />
           </div>
           <div className="form-group">
-            <label htmlFor="nom">Nom complet</label>
+            <label htmlFor="nom">Nom</label>
             <input
               type="text"
               id="nom"
               value={nom}
               onChange={(e) => setNom(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="prenom">Prénom</label>
+            <input
+              type="text"
+              id="prenom"
+              value={prenom}
+              onChange={(e) => setPrenom(e.target.value)}
               required
             />
           </div>
@@ -73,7 +84,6 @@ const AdminRegistration: React.FC<AdminRegistrationProps> = ({ onRegistration })
               id="pole"
               value={pole}
               onChange={(e) => setPole(e.target.value)}
-              required
             />
           </div>
           {error && <div className="error-message">{error}</div>}
@@ -86,4 +96,4 @@ const AdminRegistration: React.FC<AdminRegistrationProps> = ({ onRegistration })
   );
 };
 
-export default AdminRegistration; 
+export default AdminRegistration;

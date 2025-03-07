@@ -11,20 +11,23 @@ import {
   orderBy,
   limit,
   DocumentData,
-  CollectionReference
+  CollectionReference,
+  Query,
+  WhereFilterOp,
+  OrderByDirection
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 
 interface FirebaseQuery {
   collection: string;
-  where?: [string, string, any][];
-  orderBy?: [string, 'asc' | 'desc'][];
+  where?: [string, WhereFilterOp, any][];
+  orderBy?: [string, OrderByDirection][];
   limit?: number;
 }
 
 // Fonction générique pour récupérer tous les documents d'une collection
 export const getCollection = async <T>(collectionName: string): Promise<T[]> => {
-  const collectionRef = collection(db, collectionName) as CollectionReference<DocumentData>;
+  const collectionRef = collection(db, collectionName);
   const querySnapshot = await getDocs(collectionRef);
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
@@ -51,7 +54,7 @@ export const addDocument = async <T extends { id?: string }>(
   collectionName: string,
   data: Omit<T, 'id'>
 ): Promise<T> => {
-  const collectionRef = collection(db, collectionName) as CollectionReference<DocumentData>;
+  const collectionRef = collection(db, collectionName);
   const docRef = await addDoc(collectionRef, data);
   
   return {
@@ -83,26 +86,25 @@ export const deleteDocument = async (
 export const queryCollection = async <T>(
   queryParams: FirebaseQuery
 ): Promise<T[]> => {
-  const collectionRef = collection(db, queryParams.collection) as CollectionReference<DocumentData>;
-  let q = collectionRef;
+  let baseQuery: Query | CollectionReference = collection(db, queryParams.collection);
 
   if (queryParams.where) {
     queryParams.where.forEach(([field, operator, value]) => {
-      q = query(q, where(field, operator, value));
+      baseQuery = query(baseQuery, where(field, operator, value));
     });
   }
 
   if (queryParams.orderBy) {
     queryParams.orderBy.forEach(([field, direction]) => {
-      q = query(q, orderBy(field, direction));
+      baseQuery = query(baseQuery, orderBy(field, direction));
     });
   }
 
   if (queryParams.limit) {
-    q = query(q, limit(queryParams.limit));
+    baseQuery = query(baseQuery, limit(queryParams.limit));
   }
 
-  const querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(baseQuery);
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()

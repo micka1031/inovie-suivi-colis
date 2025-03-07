@@ -8,24 +8,24 @@ interface VehiculesTableProps {
 
 const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
-  
+  const [marqueFilter, setMarqueFilter] = useState('');
+  const [statutFilter, setStatutFilter] = useState<'Disponible' | 'En service' | 'En maintenance' | ''>('');
+
   // Filtrer les véhicules
   const filteredVehicules = vehicules.filter(vehicule => {
     const matchesSearch = vehicule.immatriculation.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          vehicule.marque.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vehicule.modele.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter ? vehicule.type === typeFilter : true;
+    const matchesMarque = marqueFilter ? vehicule.marque === marqueFilter : true;
     const matchesStatut = statutFilter ? vehicule.statut === statutFilter : true;
     
-    return matchesSearch && matchesType && matchesStatut;
+    return matchesSearch && matchesMarque && matchesStatut;
   });
-  
-  // Obtenir les types uniques
-  const types = Array.from(new Set(vehicules.map(v => v.type)));
-  const statuts = ['Disponible', 'En service', 'En maintenance'];
-  
+
+  // Obtenir les marques uniques
+  const marques = Array.from(new Set(vehicules.map(v => v.marque)));
+  const statuts: Array<'Disponible' | 'En service' | 'En maintenance'> = ['Disponible', 'En service', 'En maintenance'];
+
   return (
     <div className="data-table-container">
       <h1 className="page-title">Véhicules</h1>
@@ -43,13 +43,13 @@ const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
         
         <div className="filter-group">
           <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            value={marqueFilter}
+            onChange={(e) => setMarqueFilter(e.target.value)}
             className="filter-select"
           >
-            <option value="">Tous les types</option>
-            {types.map(type => (
-              <option key={type} value={type}>{type}</option>
+            <option value="">Toutes les marques</option>
+            {marques.map(marque => (
+              <option key={marque} value={marque}>{marque}</option>
             ))}
           </select>
         </div>
@@ -57,7 +57,7 @@ const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
         <div className="filter-group">
           <select
             value={statutFilter}
-            onChange={(e) => setStatutFilter(e.target.value)}
+            onChange={(e) => setStatutFilter(e.target.value as 'Disponible' | 'En service' | 'En maintenance' | '')}
             className="filter-select"
           >
             <option value="">Tous les statuts</option>
@@ -73,9 +73,9 @@ const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
           <thead>
             <tr>
               <th>Immatriculation</th>
-              <th>Type</th>
               <th>Marque</th>
               <th>Modèle</th>
+              <th>Type</th>
               <th>Statut</th>
             </tr>
           </thead>
@@ -83,9 +83,9 @@ const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
             {filteredVehicules.map(vehicule => (
               <tr key={vehicule.id}>
                 <td>{vehicule.immatriculation}</td>
-                <td>{vehicule.type}</td>
                 <td>{vehicule.marque}</td>
                 <td>{vehicule.modele}</td>
+                <td>{vehicule.type}</td>
                 <td>
                   <span className={`status-badge ${vehicule.statut.toLowerCase().replace(' ', '-')}`}>
                     {vehicule.statut}
