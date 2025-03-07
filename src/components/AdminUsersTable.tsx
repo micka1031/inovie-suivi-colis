@@ -28,9 +28,9 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
   const poles = Array.from(new Set(users.map(u => u.pole)));
 
   // Mettre à jour le statut d'un utilisateur
-  const handleStatusChange = async (userId: string, newStatus: string) => {
+  const handleStatusChange = async (userId: string, newStatus: 'actif' | 'inactif') => {
     try {
-      await updateDocument<User>('users', userId, { statut: newStatus });
+      await updateDocument<Partial<User>>('users', userId, { statut: newStatus });
       onUserUpdated();
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut:', error);
@@ -114,14 +114,14 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
                 <td>
                   <select
                     value={user.statut}
-                    onChange={(e) => handleStatusChange(user.id, e.target.value)}
+                    onChange={(e) => handleStatusChange(user.id, e.target.value as 'actif' | 'inactif')}
                     className="status-select"
                   >
                     <option value="actif">Actif</option>
                     <option value="inactif">Inactif</option>
                   </select>
                 </td>
-                <td>{user.derniereConnexion ? new Date(user.derniereConnexion.seconds * 1000).toLocaleString() : 'Jamais'}</td>
+                <td>{user.derniereConnexion ? user.derniereConnexion.toDate().toLocaleString() : 'Jamais'}</td>
                 <td>
                   <button
                     onClick={() => handleDelete(user.id)}

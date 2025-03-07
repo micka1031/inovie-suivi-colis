@@ -19,7 +19,7 @@ const PassagesTable: React.FC<PassagesTableProps> = ({ passages, sites, tournees
   const filteredPassages = passages.filter(passage => {
     const matchesSearch = passage.idColis.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSite = siteFilter ? passage.siteDepart === siteFilter || passage.siteFin === siteFilter : true;
-    const matchesTournee = tourneeFilter ? passage.tournee === tourneeFilter : true;
+    const matchesTournee = tourneeFilter ? passage.tourneeId === tourneeFilter : true;
     const matchesStatut = statutFilter ? passage.statut === statutFilter : true;
 
     return matchesSearch && matchesSite && matchesTournee && matchesStatut;
@@ -64,7 +64,7 @@ const PassagesTable: React.FC<PassagesTableProps> = ({ passages, sites, tournees
           >
             <option value="">Toutes les tournées</option>
             {tournees.map(tournee => (
-              <option key={tournee.id} value={tournee.nom}>{tournee.nom}</option>
+              <option key={tournee.id} value={tournee.id}>{tournee.nom}</option>
             ))}
           </select>
         </div>
@@ -106,12 +106,12 @@ const PassagesTable: React.FC<PassagesTableProps> = ({ passages, sites, tournees
                 <td>{passage.siteDepart}</td>
                 <td>{passage.dateHeureDepart.toDate().toLocaleString()}</td>
                 <td>{passage.siteFin}</td>
-                <td>{passage.dateHeureLivraison ? passage.dateHeureLivraison.toDate().toLocaleString() : '-'}</td>
+                <td>{passage.dateHeureLivraison?.toDate().toLocaleString() || '-'}</td>
                 <td>{passage.statut}</td>
                 <td>{passage.coursierChargement}</td>
                 <td>{passage.coursierLivraison || '-'}</td>
                 <td>{passage.vehicule}</td>
-                <td>{passage.tournee}</td>
+                <td>{passage.tourneeId}</td>
               </tr>
             ))}
           </tbody>
