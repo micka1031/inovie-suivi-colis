@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 interface User {
   id: string;
@@ -17,7 +18,6 @@ const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // État pour le modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentUser, setCurrentUser] = useState<Partial<User>>({
@@ -36,57 +36,14 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const usersData = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as User[];
       
-      // Simuler des données utilisateurs pour la démonstration
-      const mockUsers = [
-        {
-          id: '1',
-          identifiant: 'admin',
-          nom: 'Administrateur',
-          role: 'Administrateur',
-          pole: 'Administration',
-          statut: 'actif',
-          email: 'admin@inovie.fr'
-        },
-        {
-          id: '2',
-          identifiant: 'slherlier',
-          nom: 'Sébastien Lherlier',
-          role: 'Coursier',
-          pole: 'Logistique',
-          statut: 'actif',
-          email: 'sebastien.lherlier@novus.fr'
-        },
-        {
-          id: '3',
-          identifiant: 'gsage',
-          nom: 'Guillaume Sage',
-          role: 'Coursier',
-          pole: 'Logistique',
-          statut: 'actif',
-          email: 'guillaume.sage@novus.fr'
-        },
-        {
-          id: '4',
-          identifiant: 'jdupont',
-          nom: 'Jean Dupont',
-          role: 'Coursier',
-          pole: 'Logistique',
-          statut: 'actif',
-          email: 'jean.dupont@novus.fr'
-        },
-        {
-          id: '5',
-          identifiant: 'mroude',
-          nom: 'Michel Roude',
-          role: 'Coursier',
-          pole: 'Logistique',
-          statut: 'actif',
-          email: 'michel.roude@novus.fr'
-        }
-      ];
-      
-      setUsers(mockUsers);
+      setUsers(usersData);
       setLoading(false);
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs:', error);
@@ -106,31 +63,41 @@ const UserManagement: React.FC = () => {
     try {
       if (isEditing && currentUser.id) {
         // Mettre à jour un utilisateur existant
-        console.log('Mise à jour de l\'utilisateur:', currentUser);
+        const userRef = doc(db, 'users', currentUser.id);
+        await updateDoc(userRef, currentUser);
         
-        // Dans une vraie application, vous utiliseriez updateDoc pour mettre à jour Firestore
-        // Simulation pour la démonstration
         setUsers(users.map(user => 
           user.id === currentUser.id ? { ...user, ...currentUser as User } : user
         ));
       } else {
-        // Ajouter un nouvel utilisateur
-        console.log('Ajout d\'un nouvel utilisateur:', currentUser);
+        // Créer le compte Firebase Auth
+        const email = currentUser.email || `${currentUser.identifiant}@inovie.fr`;
+        const defaultPassword = 'Inovie2024!'; // Mot de passe par défaut
+
+        // Créer l'utilisateur dans Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, defaultPassword);
         
-        // Simuler l'ajout avec un nouvel ID
-        const newUser = {
-          ...currentUser as User,
-          id: Date.now().toString()
+        // Ajouter l'utilisateur dans Firestore
+        const newUserData = {
+          ...currentUser,
+          uid: userCredential.user.uid,
+          email: email,
+          createdAt: new Date().toISOString()
         };
+        
+        const docRef = await addDoc(collection(db, 'users'), newUserData);
+        const newUser = {
+          id: docRef.id,
+          ...newUserData
+        } as User;
         
         setUsers([...users, newUser]);
       }
       
-      // Fermer le modal et réinitialiser le formulaire
       closeModal();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'enregistrement:', error);
-      setError('Erreur lors de l\'enregistrement');
+      setError(error.message || 'Erreur lors de l\'enregistrement');
     }
   };
 
@@ -143,8 +110,8 @@ const UserManagement: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       try {
-        // Dans une vraie application, vous utiliseriez deleteDoc pour supprimer de Firestore
-        // Simulation pour la démonstration
+        // Supprimer l'utilisateur de Firestore
+        await deleteDoc(doc(db, 'users', id));
         setUsers(users.filter(user => user.id !== id));
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
@@ -203,7 +170,6 @@ const UserManagement: React.FC = () => {
             <tr>
               <th>Identifiant</th>
               <th>Nom</th>
-              <th>Email</th>
               <th>Rôle</th>
               <th>Pôle</th>
               <th>Statut</th>
@@ -211,124 +177,95 @@ const UserManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {users.map(user => (
               <tr key={user.id}>
                 <td>{user.identifiant}</td>
                 <td>{user.nom}</td>
-                <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td>{user.pole}</td>
+                <td>{user.statut}</td>
                 <td>
-                  <span className={user.statut === 'actif' ? 'livré' : 'en-cours'}>
-                    {user.statut}
-                  </span>
-                </td>
-                <td>
-                  <div className="table-actions">
-                    <button 
-                      onClick={() => handleEdit(user)} 
-                      className="button button-secondary edit-button"
-                    >
-                      <i className="fas fa-edit"></i> Modifier
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(user.id)} 
-                      className="button button-danger delete-button"
-                    >
-                      <i className="fas fa-trash-alt"></i> Supprimer
-                    </button>
-                  </div>
+                  <button className="edit-button" onClick={() => handleEdit(user)}>
+                    <i className="fas fa-edit"></i>
+                  </button>
+                  <button className="delete-button" onClick={() => handleDelete(user.id)}>
+                    <i className="fas fa-trash"></i>
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      
-      {/* Modal pour ajouter/modifier un utilisateur */}
+
       {isModalOpen && (
-        <div className="modal-overlay">
+        <div className="modal">
           <div className="modal-content">
-            <div className="modal-header">
-              <h3 className="modal-title">{isEditing ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}</h3>
-              <button className="modal-close" onClick={closeModal}>&times;</button>
-            </div>
-            
+            <h3>{isEditing ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="identifiant" className="form-label">Identifiant</label>
+                <label htmlFor="identifiant">Identifiant</label>
                 <input
                   type="text"
                   id="identifiant"
                   name="identifiant"
-                  className="form-input"
                   value={currentUser.identifiant}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              
               <div className="form-group">
-                <label htmlFor="nom" className="form-label">Nom</label>
+                <label htmlFor="nom">Nom</label>
                 <input
                   type="text"
                   id="nom"
                   name="nom"
-                  className="form-input"
                   value={currentUser.nom}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Email</label>
+                <label htmlFor="email">Email</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  className="form-input"
                   value={currentUser.email}
                   onChange={handleInputChange}
-                  required
+                  placeholder="identifiant@inovie.fr"
                 />
               </div>
-              
               <div className="form-group">
-                <label htmlFor="role" className="form-label">Rôle</label>
+                <label htmlFor="role">Rôle</label>
                 <select
                   id="role"
                   name="role"
-                  className="form-select"
                   value={currentUser.role}
                   onChange={handleInputChange}
                   required
                 >
+                  <option value="Administrateur">Administrateur</option>
                   <option value="Utilisateur">Utilisateur</option>
                   <option value="Coursier">Coursier</option>
-                  <option value="Administrateur">Administrateur</option>
                 </select>
               </div>
-              
               <div className="form-group">
-                <label htmlFor="pole" className="form-label">Pôle</label>
+                <label htmlFor="pole">Pôle</label>
                 <input
                   type="text"
                   id="pole"
                   name="pole"
-                  className="form-input"
                   value={currentUser.pole}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              
               <div className="form-group">
-                <label htmlFor="statut" className="form-label">Statut</label>
+                <label htmlFor="statut">Statut</label>
                 <select
                   id="statut"
                   name="statut"
-                  className="form-select"
                   value={currentUser.statut}
                   onChange={handleInputChange}
                   required
@@ -337,13 +274,12 @@ const UserManagement: React.FC = () => {
                   <option value="inactif">Inactif</option>
                 </select>
               </div>
-              
-              <div className="modal-footer">
-                <button type="button" className="button button-secondary" onClick={closeModal}>
-                  Annuler
+              <div className="modal-buttons">
+                <button type="submit" className="save-button">
+                  {isEditing ? 'Enregistrer' : 'Ajouter'}
                 </button>
-                <button type="submit" className="button">
-                  {isEditing ? 'Mettre à jour' : 'Ajouter'}
+                <button type="button" className="cancel-button" onClick={closeModal}>
+                  Annuler
                 </button>
               </div>
             </form>

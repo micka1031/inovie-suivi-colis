@@ -4,8 +4,12 @@ import { InovieLogo } from '../assets/inovie-logo';
 
 interface NavbarProps {
   user: {
+    id: string;
+    identifiant: string;
     nom: string;
     role: string;
+    pole: string;
+    statut: string;
   };
   onLogout: () => void;
 }
@@ -21,7 +25,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
           <h1 className="app-title">SUIVI DE COLIS</h1>
         </div>
         <div className="user-info">
-          <span>{user.nom}</span>
+          <span>{user.nom} ({user.role})</span>
           <button className="reload-button" onClick={() => window.location.reload()}>
             <i className="fas fa-sync-alt"></i> Reload
           </button>

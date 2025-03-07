@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import LoginScreen from './components/LoginScreen';
 import Dashboard from './components/Dashboard';
 import Passages from './components/Passages';
@@ -27,22 +27,69 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const initializeAdminUser = async (identifier: string) => {
+    const usersRef = collection(db, 'users');
+    const adminData = {
+      identifiant: identifier,
+      nom: 'Administrateur',
+      role: 'Administrateur',
+      pole: 'Administration',
+      statut: 'actif',
+      email: 'admin@inovie.fr',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      // Vérifier si l'admin existe déjà
+      const q = query(usersRef, where('identifiant', '==', identifier));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        // Créer l'admin s'il n'existe pas
+        const docRef = await setDoc(doc(usersRef, 'admin'), adminData);
+        console.log('Admin user created');
+        return { id: 'admin', ...adminData };
+      } else {
+        // Mettre à jour le rôle si nécessaire
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        if (userData.role !== 'Administrateur') {
+          await setDoc(doc(usersRef, userDoc.id), { ...userData, role: 'Administrateur' }, { merge: true });
+          console.log('Admin role updated');
+        }
+        return { id: userDoc.id, ...userData };
+      }
+    } catch (error) {
+      console.error('Error initializing admin:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          // Extraire l'identifiant de l'email
           const identifier = firebaseUser.email?.split('@')[0] || '';
           
-          // Rechercher l'utilisateur dans Firestore par son identifiant
-          const usersRef = collection(db, 'users');
-          const q = query(usersRef, where('identifiant', '==', identifier));
-          const querySnapshot = await getDocs(q);
-          
-          if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0];
-            const userData = userDoc.data() as UserData;
-            setUser({ ...userData, id: userDoc.id });
+          let userData: UserData | null = null;
+
+          if (identifier === 'admin') {
+            // S'assurer que l'utilisateur admin a les bons droits
+            userData = await initializeAdminUser(identifier) as UserData;
+          } else {
+            // Rechercher l'utilisateur normal dans Firestore
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('identifiant', '==', identifier));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+              const userDoc = querySnapshot.docs[0];
+              userData = { ...userDoc.data(), id: userDoc.id } as UserData;
+            }
+          }
+
+          if (userData) {
+            setUser(userData);
           } else {
             console.error('Utilisateur non trouvé dans Firestore');
             await signOut(auth);
