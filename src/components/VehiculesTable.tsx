@@ -8,23 +8,23 @@ interface VehiculesTableProps {
 
 const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [poleFilter, setPoleFilter] = useState('');
-  const [serviceFilter, setServiceFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statutFilter, setStatutFilter] = useState('');
   
   // Filtrer les véhicules
   const filteredVehicules = vehicules.filter(vehicule => {
     const matchesSearch = vehicule.immatriculation.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          vehicule.marque.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vehicule.modele.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPole = poleFilter ? vehicule.pole === poleFilter : true;
-    const matchesService = serviceFilter ? vehicule.service === serviceFilter : true;
+    const matchesType = typeFilter ? vehicule.type === typeFilter : true;
+    const matchesStatut = statutFilter ? vehicule.statut === statutFilter : true;
     
-    return matchesSearch && matchesPole && matchesService;
+    return matchesSearch && matchesType && matchesStatut;
   });
   
-  // Obtenir les pôles et services uniques
-  const poles = Array.from(new Set(vehicules.map(v => v.pole)));
-  const services = Array.from(new Set(vehicules.map(v => v.service)));
+  // Obtenir les types uniques
+  const types = Array.from(new Set(vehicules.map(v => v.type)));
+  const statuts = ['Disponible', 'En service', 'En maintenance'];
   
   return (
     <div className="data-table-container">
@@ -43,26 +43,26 @@ const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
         
         <div className="filter-group">
           <select
-            value={poleFilter}
-            onChange={(e) => setPoleFilter(e.target.value)}
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
             className="filter-select"
           >
-            <option value="">Tous les pôles</option>
-            {poles.map(pole => (
-              <option key={pole} value={pole}>{pole}</option>
+            <option value="">Tous les types</option>
+            {types.map(type => (
+              <option key={type} value={type}>{type}</option>
             ))}
           </select>
         </div>
         
         <div className="filter-group">
           <select
-            value={serviceFilter}
-            onChange={(e) => setServiceFilter(e.target.value)}
+            value={statutFilter}
+            onChange={(e) => setStatutFilter(e.target.value)}
             className="filter-select"
           >
-            <option value="">Tous les services</option>
-            {services.map(service => (
-              <option key={service} value={service}>{service}</option>
+            <option value="">Tous les statuts</option>
+            {statuts.map(statut => (
+              <option key={statut} value={statut}>{statut}</option>
             ))}
           </select>
         </div>
@@ -73,22 +73,24 @@ const VehiculesTable: React.FC<VehiculesTableProps> = ({ vehicules }) => {
           <thead>
             <tr>
               <th>Immatriculation</th>
+              <th>Type</th>
               <th>Marque</th>
               <th>Modèle</th>
-              <th>Carburant</th>
-              <th>Pôle</th>
-              <th>Service</th>
+              <th>Statut</th>
             </tr>
           </thead>
           <tbody>
             {filteredVehicules.map(vehicule => (
               <tr key={vehicule.id}>
                 <td>{vehicule.immatriculation}</td>
+                <td>{vehicule.type}</td>
                 <td>{vehicule.marque}</td>
                 <td>{vehicule.modele}</td>
-                <td>{vehicule.carburant}</td>
-                <td>{vehicule.pole}</td>
-                <td>{vehicule.service}</td>
+                <td>
+                  <span className={`status-badge ${vehicule.statut.toLowerCase().replace(' ', '-')}`}>
+                    {vehicule.statut}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>

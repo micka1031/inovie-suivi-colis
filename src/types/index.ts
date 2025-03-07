@@ -2,12 +2,13 @@ import { Timestamp } from 'firebase/firestore';
 
 export interface User {
   id: string;
+  email: string;
   nom: string;
-  identifiant: string;
-  role: string;
-  pole: string;
-  statut: 'actif' | 'inactif';
-  derniereConnexion: Timestamp | null;
+  prenom: string;
+  role: 'Utilisateur' | 'Administrateur';
+  pole?: string;
+  dateCreation: string;
+  dernierAcces?: string;
 }
 
 export interface Passage {
@@ -15,27 +16,44 @@ export interface Passage {
   idColis: string;
   siteDepart: string;
   siteFin: string;
-  dateHeureDepart: Timestamp;
-  dateHeureLivraison: Timestamp | null;
-  statut: string;
-  coursierChargement: string;
-  coursierLivraison: string | null;
-  vehicule: string;
-  tourneeId: string;
-  tournee?: string;
+  dateHeureDepart: string;
+  dateHeureFin?: string;
+  statut: 'En attente' | 'En cours' | 'Livré' | 'Problème';
+  tourneeId?: string;
+  vehiculeId?: string;
+  commentaire?: string;
 }
 
 export interface Site {
   id: string;
   nom: string;
+  codeBarres: string;
+  pole: string;
+  ville: string;
+  adresse: string;
+  telephone?: string;
+  email?: string;
 }
 
 export interface Tournee {
   id: string;
   nom: string;
+  codeBarres: string;
+  pole: string;
+  vehiculeId?: string;
+  personne?: string;
+  dateDebut: string;
+  dateFin?: string;
+  statut: string;
+  commentaire?: string;
 }
 
 export interface Vehicule {
   id: string;
   nom: string;
+  type: string;
+  marque: string;
+  modele: string;
+  immatriculation: string;
+  statut: 'Disponible' | 'En service' | 'En maintenance';
 }
