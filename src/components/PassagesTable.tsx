@@ -91,12 +91,11 @@ const PassagesTable: React.FC<PassagesTableProps> = ({ passages, sites, tournees
               <th>Site Départ</th>
               <th>Date/Heure Départ</th>
               <th>Site Fin</th>
-              <th>Date/Heure Livraison</th>
+              <th>Date/Heure Fin</th>
               <th>Statut</th>
-              <th>Coursier Chargement</th>
-              <th>Coursier Livraison</th>
-              <th>Véhicule</th>
               <th>Tournée</th>
+              <th>Véhicule</th>
+              <th>Commentaire</th>
             </tr>
           </thead>
           <tbody>
@@ -104,14 +103,13 @@ const PassagesTable: React.FC<PassagesTableProps> = ({ passages, sites, tournees
               <tr key={passage.id}>
                 <td>{passage.idColis}</td>
                 <td>{passage.siteDepart}</td>
-                <td>{passage.dateHeureDepart.toDate().toLocaleString()}</td>
+                <td>{passage.dateHeureDepart}</td>
                 <td>{passage.siteFin}</td>
-                <td>{passage.dateHeureLivraison?.toDate().toLocaleString() || '-'}</td>
+                <td>{passage.dateHeureFin || '-'}</td>
                 <td>{passage.statut}</td>
-                <td>{passage.coursierChargement}</td>
-                <td>{passage.coursierLivraison || '-'}</td>
-                <td>{passage.vehicule}</td>
-                <td>{passage.tourneeId}</td>
+                <td>{passage.tourneeId || '-'}</td>
+                <td>{passage.vehiculeId || '-'}</td>
+                <td>{passage.commentaire || '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -121,4 +119,4 @@ const PassagesTable: React.FC<PassagesTableProps> = ({ passages, sites, tournees
   );
 };
 
-export default PassagesTable; 
+export default PassagesTable;

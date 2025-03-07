@@ -16,7 +16,7 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
   // Filtrer les utilisateurs
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.identifiant.toLowerCase().includes(searchTerm.toLowerCase());
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter ? user.role === roleFilter : true;
     const matchesPole = poleFilter ? user.pole === poleFilter : true;
     
@@ -25,17 +25,7 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
 
   // Obtenir les rôles et pôles uniques
   const roles = Array.from(new Set(users.map(u => u.role)));
-  const poles = Array.from(new Set(users.map(u => u.pole)));
-
-  // Mettre à jour le statut d'un utilisateur
-  const handleStatusChange = async (userId: string, newStatus: 'actif' | 'inactif') => {
-    try {
-      await updateDocument<Partial<User>>('users', userId, { statut: newStatus });
-      onUserUpdated();
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour du statut:', error);
-    }
-  };
+  const poles = Array.from(new Set(users.filter(u => u.pole).map(u => u.pole)));
 
   // Supprimer un utilisateur
   const handleDelete = async (userId: string) => {
@@ -57,7 +47,7 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
         <div className="filter-group">
           <input
             type="text"
-            placeholder="Rechercher par nom ou identifiant..."
+            placeholder="Rechercher par nom ou email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="filter-input"
@@ -96,11 +86,12 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
           <thead>
             <tr>
               <th>Nom</th>
-              <th>Identifiant</th>
+              <th>Prénom</th>
+              <th>Email</th>
               <th>Rôle</th>
               <th>Pôle</th>
-              <th>Statut</th>
-              <th>Dernière Connexion</th>
+              <th>Date de création</th>
+              <th>Dernier accès</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -108,20 +99,12 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
             {filteredUsers.map(user => (
               <tr key={user.id}>
                 <td>{user.nom}</td>
-                <td>{user.identifiant}</td>
+                <td>{user.prenom}</td>
+                <td>{user.email}</td>
                 <td>{user.role}</td>
-                <td>{user.pole}</td>
-                <td>
-                  <select
-                    value={user.statut}
-                    onChange={(e) => handleStatusChange(user.id, e.target.value as 'actif' | 'inactif')}
-                    className="status-select"
-                  >
-                    <option value="actif">Actif</option>
-                    <option value="inactif">Inactif</option>
-                  </select>
-                </td>
-                <td>{user.derniereConnexion ? user.derniereConnexion.toDate().toLocaleString() : 'Jamais'}</td>
+                <td>{user.pole || '-'}</td>
+                <td>{user.dateCreation}</td>
+                <td>{user.dernierAcces || 'Jamais'}</td>
                 <td>
                   <button
                     onClick={() => handleDelete(user.id)}
