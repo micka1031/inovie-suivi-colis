@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User } from '../types';
-import { getCollection, updateDocument, deleteDocument } from '../firebaseUtils';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import './DataTable.css';
 
 interface AdminUsersTableProps {
@@ -31,7 +32,7 @@ const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, onUserUpdated 
   const handleDelete = async (userId: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       try {
-        await deleteDocument('users', userId);
+        await deleteDoc(doc(db, 'users', userId));
         onUserUpdated();
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);

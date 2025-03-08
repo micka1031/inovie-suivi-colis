@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { createUser } from '../firebaseAuth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { User } from '../types';
 import './LoginScreen.css';
 
@@ -22,10 +24,44 @@ const AdminRegistration: React.FC<AdminRegistrationProps> = ({ onRegistration })
     setIsLoading(true);
 
     try {
-      const user = await createUser(email, password, nom, prenom, 'Administrateur', pole);
+      // Créer l'utilisateur dans Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      // Mettre à jour le profil Firebase
+      await updateProfile(firebaseUser, {
+        displayName: `${prenom} ${nom}`
+      });
+
+      // Créer le document utilisateur dans Firestore
+      const newUser: Omit<User, "id"> = {
+        email,
+        nom,
+        prenom,
+        role: 'Administrateur',
+        pole,
+        dateCreation: new Date().toISOString(),
+        dernierAcces: new Date().toISOString()
+      };
+
+      await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+
+      const user = {
+        id: firebaseUser.uid,
+        ...newUser
+      };
+      
       onRegistration(user);
     } catch (error: any) {
-      setError(error.message);
+      let errorMessage = 'Une erreur est survenue lors de la création du compte';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Cet email est déjà utilisé';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Le mot de passe est trop faible';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Email invalide';
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
