@@ -5,11 +5,12 @@ import {
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
-  updateProfile
+  updateProfile,
+  deleteUser
 } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { User } from './types';
-import { getDocument, updateDocument, addDocument, queryCollection } from './firebaseUtils';
+import { getDocument, updateDocument, addDocument, queryCollection, doc, deleteDoc } from './firebaseUtils';
 
 // Fonction de connexion
 export const loginWithEmail = async (email: string, password: string): Promise<User> => {
@@ -94,6 +95,25 @@ export const createUser = async (
     };
   } catch (error: any) {
     throw new Error(getAuthErrorMessage(error.code));
+  }
+};
+
+// Fonction pour supprimer un utilisateur
+export const deleteUserAccount = async (userId: string, userAuth: FirebaseUser | null) => {
+  try {
+    // Supprimer de Firestore
+    await deleteDoc(doc(db, 'users', userId));
+
+    // Si l'utilisateur actuellement connecté est celui qu'on veut supprimer
+    if (userAuth && userAuth.email) {
+      // Supprimer de Firebase Auth
+      await deleteUser(userAuth);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error);
+    throw error;
   }
 };
 
